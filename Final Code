@@ -1,0 +1,116 @@
+#include <Stepper.h>
+#include <Servo.h>
+
+// Define number of steps per revolution:
+const int stepsPerRevolution = 200;
+
+Servo myservo;  // create servo object to control a servo
+// Initialize the stepper library on pins 8 through 11:
+Stepper xStepper = Stepper(stepsPerRevolution, 10, 11, 12, 13);
+Stepper yStepper = Stepper(stepsPerRevolution, 6, 7, 8, 9);
+
+int x_axis = A0;
+int y_axis = A1;
+int pushButtonPin = 4;
+int servoPin = 3;
+int StepperDelay = 10;
+int y_lower = 300;
+int y_upper = 800;
+int x_lower = 300;
+int x_upper = 800;
+
+int angle =90;    // initial angle  for servo
+int angleStep =5;
+int minAngle = 0;
+int maxAngle = 150;
+int buttonPushed =0;
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(x_axis, INPUT);
+  pinMode(y_axis, INPUT);
+  pinMode(pushButtonPin, INPUT);
+  myservo.attach(servoPin);  
+  
+  // Set the motor speed (RPMs):
+  xStepper.setSpeed(50);
+  yStepper.setSpeed(50);
+  
+  Serial.begin(9600);
+  Serial.println("end of setup");
+}
+
+void loop() {
+ // Serial.println("top of loop");
+  int xval = analogRead(x_axis);
+  int yval = analogRead(y_axis);
+ /* Serial.print("xval: ");
+  Serial.println(xval);
+  Serial.print("yval: ");
+  Serial.println(yval);*/
+
+    if(xval < x_lower){
+        //Serial.println(xval);
+      /*  if(yval < y_lower){
+          xStepper.step(-200);
+          yStepper.step(-200);
+       //   delay(StepperDelay);
+        }
+        else if(yval > y_upper){
+          xStepper.step(-200);
+          yStepper.step(200); 
+        //  delay(StepperDelay);         
+        }*/
+     //   else{
+          xStepper.step(-100);
+          delay(StepperDelay);
+    //    }
+    }
+    
+    else if(xval > x_upper){
+     /* if(yval < y_lower){
+          xStepper.step(200);
+          yStepper.step(-200);
+       //   delay(StepperDelay);
+        }
+        else if(yval > y_upper){
+          xStepper.step(200);
+          yStepper.step(200); 
+       //   delay(StepperDelay);         
+        }
+        else{*/
+          xStepper.step(100);
+          delay(StepperDelay);
+        //}
+    }  
+    if(yval < y_lower){
+        yStepper.step(-100);
+        delay(StepperDelay);
+    }
+    else if(yval > y_upper){
+        yStepper.step(100);
+        delay(StepperDelay);
+    }    
+
+//servo motor code
+    if(digitalRead(pushButtonPin) == LOW){
+      Serial.println("in first if");
+    buttonPushed = 1;
+  }
+   if( buttonPushed ){
+  // change the angle for next time through the loop:
+  angle = angle + angleStep;
+
+    // reverse the direction of the moving at the ends of the angle:
+    if (angle <= minAngle || angle >= maxAngle) {
+      Serial.println("in 2nd if");
+      angleStep = -angleStep;
+       buttonPushed = 0;
+    }
+    myservo.write(angle); // move the servo to desired angle
+      Serial.println("after angle write");
+     /* Serial.print("Moved to: ");
+      Serial.print(angle);   // print the angle
+      Serial.println(" degree"); */   
+      delay(10); // waits for the servo to get there
+   }
